@@ -5,11 +5,11 @@ Server.use(restify.bodyParser());
 var D 				= require('domain').create();
 var Config			= require('./config.js');
 //mogodb initialize
-var Db = require("mongojs").connect("mydb", ["users","spot"]);
+var Db = require("mongojs").connect("easyparking", ["users","spot"]);
 Db.runCommand({ping:1}, function(err, res) {
-    if(!err && res.ok) console.log("we're up");
+    if(!err && res.ok) console.log("Mongodb is ready\n");
     else{
-    	console.log(err);
+    	console.log("[Error] could not connect to Mongodb\n");
     }
 });
 var setErrorHandle  = function(req,res){
@@ -23,7 +23,7 @@ var setErrorHandle  = function(req,res){
 		Config.ErrorSet = true;
 	}
 }
-
+console.log("Methods:\n=================");
 Config.Models.forEach(function(M){
 	var M = require("./model/"+M+".js")(Db,Config),p='',method='',link='';
 	for(var i in M){
@@ -36,6 +36,7 @@ Config.Models.forEach(function(M){
 			method = 'get';
 			link   = i;
 		}
+		console.log(method+"-->"+link);
 		Server[method](
 			link,//route url
 			function(url){
@@ -54,9 +55,10 @@ Config.Models.forEach(function(M){
 		);//Server.get end
 	}
 });
+console.log("==========================");
 //D.add(Server)
-Server.listen(9527,function(){
-	console.log("Start server listening on port 9527");
+Server.listen(Config.Port,function(){
+	console.log("Start server listening on port "+Config.Port);
 });
 // process.on('uncaughtException', function(err){
 // 	console.log(err);
