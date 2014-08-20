@@ -1,5 +1,6 @@
 module.exports = function(Db,Cfg){
 	Db.spot.ensureIndex({'loc':'2dsphere'});
+	Db.spot.ensureIndex({'uid':1});
 	return {
 		'post@/spot_add' : function(req,res,next,domain){
 			if(typeof req.params.latlng == "undefined" || (req.params.latlng.length == 0) || (req.params.latlng.indexOf(',') === -1)){
@@ -29,6 +30,13 @@ module.exports = function(Db,Cfg){
 					}
 				})
 			});
-		}
+		},//spot_add method end
+		'/myspots' : function(req,res,next,domain){
+			Db.spot.find({uid:req.params.uid},function(err,result){
+				domain.run(function(){
+					res.end('{"code":"success","total":'+result.length+',"result":"'+JSON.stringify(result)+'"}');
+				})
+			});
+		}//myspots method end
 	}
 }
