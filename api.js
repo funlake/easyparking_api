@@ -5,9 +5,12 @@ Server.use(restify.bodyParser());
 var D 				= require('domain').create();
 var Config			= require('./config.js');
 //mogodb initialize
-var Db = require("mongojs").connect("easyparking", ["users","spot"]);
+var Db = require("mongojs").connect("easyparking", ["users","spot","apply"]);
 Db.runCommand({ping:1}, function(err, res) {
-    if(!err && res.ok) console.log("Mongodb is ready\n");
+    if(!err && res.ok){
+    	console.log("Mongodb is ready\n");
+
+    }
     else{
     	console.log("[Error] could not connect to Mongodb\n");
     }

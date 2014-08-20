@@ -2,7 +2,7 @@ module.exports=function(){
 	return {
 		'ErrorSet' 		: false,
 		'CurrentRes'	: null,
-		'Models'		: ['user','apply'],
+		'Models'		: ['user','apply','spot'],
 		'Port'			: 9527
 	}
 }()
