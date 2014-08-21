@@ -31,10 +31,10 @@ module.exports = function(Db,Cfg){
 				})
 			});
 		},//spot_add method end
-		'/myspots' : function(req,res,next,domain){
+		'/myspots/:uid' : function(req,res,next,domain){
 			Db.spot.find({uid:req.params.uid},function(err,result){
 				domain.run(function(){
-					res.end('{"code":"success","total":'+result.length+',"result":"'+JSON.stringify(result)+'"}');
+					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
 				})
 			});
 		}//myspots method end
