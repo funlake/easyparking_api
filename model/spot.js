@@ -20,7 +20,7 @@ module.exports = function(Db,Cfg){
 								longitude:lng,
 								latitude:lat
 							},
-							radius:req.params.radius,
+							desc:req.params.desc,
 							available_times : req.params.times.split(";"),
 							state:1
 						},function(err,inserted){
@@ -71,6 +71,13 @@ module.exports = function(Db,Cfg){
 					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
 				})
 			});
-		}//myspots method end
+		},//myspots method end
+		'/spot_get/:id' : function(req,res,next,domain){
+			Db.spot.find({_id:Db.ObjectId(req.params.id)},function(err,result){
+				domain.run(function(){
+					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}')
+				});
+			});
+		}
 	}
 }
