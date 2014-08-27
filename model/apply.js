@@ -9,12 +9,22 @@ module.exports = function(Db,Cfg){
 				res.end('{"code":"error","msg":"Spot or user info required"}')
 			}
 			var helper = require("../helper.js");
-			Db.apply.save({
-				uid 	: req.params.uid,
-				spot_id : req.params.spot_id,
-				created_time : helper.getDateTime(),
-				state 	: "normal"
- 			})
+			domain.run(function(){
+				Db.apply.save({
+					uid 	: req.params.uid,
+					spot_id : req.params.spot_id,
+					created_time : helper.getDateTime(),
+					state 	: "normal"
+	 			},function(err,status){
+	 				if(!err && status){
+						res.end('{"code":"success","msg":"申请添加成功"}');
+					}
+					else{
+						res.end('{"code":"error","msg":"申请添加失败"}');
+					}
+	 			})
+			})
+
 		}
 	}
 }

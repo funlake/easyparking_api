@@ -31,7 +31,6 @@ module.exports = function(Db,Cfg){
 								res.end('{"code":"error","msg":"车位无法添加"}');
 							}
 						});
-						
 					}
 					else{
 						res.end('{"code":"error","msg":"此车位已存在,无需重复添加"}');
