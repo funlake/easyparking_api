@@ -38,17 +38,37 @@ module.exports = function(Db,Cfg){
 				})
 			});
 		},//spot_add method end
-		'/spot_remove/:id':function(req,res,next,domain){
-			Db.spot.remove({_id:Db.ObjectId(req.params.id)},function(err,status){
-				domain.run(function(){
-					if(!err){
-						res.end('{"code":"success","msg":"车位已经删除"}');
-					}
-					else{
-						res.end('{"code":"error","msg":"'+status+'"}');
-					}
-				})
-			})
+		'post@/spot_remove/:uid':function(req,res,next,domain){
+			if(req.params.ids == ""){
+				res.end('{"code":"error","msg":"未提供要删除的id"}');
+				return;
+			}
+			var ids = req.params.ids.split(",");
+			if(ids.length){
+				res.end('{"code":"success","msg":"车位已经删除"}'); //quick response,let process worked behind
+				var tid;
+				for(var i = 0,j=ids.length;i<j;i++){
+					tid = Db.ObjectId(ids[i]);
+					Db.spot.remove(
+						{_id:tid,uid:req.params.uid},
+						(
+							function(sid){
+								return function(err,status){
+									//update all related apply
+									if(!err){
+										Db.apply.update({spot_id:sid},{$set:{state:"spot_removed"}},{multi:true})
+									}
+								}
+							}
+						)(tid)
+					);
+				}
+			}
+			else{
+				res.end('{"code":"error","msg":"未提供要删除的id"}');
+			}
+
+
 		},
 		'/spot_radius_find/:lng/:lat/:radius' : function(req,res,next,domain){
 			Db.spot.find({'loc':{
