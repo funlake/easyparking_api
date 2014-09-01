@@ -20,9 +20,9 @@ module.exports = function(Db,Cfg){
 								longitude:lng,
 								latitude:lat
 							},
-							desc:req.params.desc,
+							desc:req.params.desc+" ",
 							available_times : req.params.times.split(";"),
-							state:1
+							state:'normal'
 						},function(err,inserted){
 							if(!err && inserted){
 								res.end('{"code":"success","msg":"车位已成功添加"}');
@@ -47,6 +47,7 @@ module.exports = function(Db,Cfg){
 			if(ids.length){
 				res.end('{"code":"success","msg":"车位已经删除"}'); //quick response,let process worked behind
 				var tid;
+				console.log(ids);
 				for(var i = 0,j=ids.length;i<j;i++){
 					tid = Db.ObjectId(ids[i]);
 					Db.spot.remove(
@@ -70,17 +71,19 @@ module.exports = function(Db,Cfg){
 
 
 		},
-		'/spot_radius_find/:lng/:lat/:radius' : function(req,res,next,domain){
+		'/spot_radius_find/:lng/:lat/:radius/:uid' : function(req,res,next,domain){
 			Db.spot.find({'loc':{
 				$geoWithin:{
 					$centerSphere:[ 
 						//6371 符合高德地图切面,3959不符合
 						[parseFloat(req.params.lng),parseFloat(req.params.lat)] , parseFloat(req.params.radius)/6371 ] 
 				}
-			}},function(err,result){
-				domain.run(function(){
-					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
-				})
+			},state:'normal'},function(err,result){
+				if(!err){
+					domain.run(function(){
+						res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
+					})
+				}
 
 			});
 		},

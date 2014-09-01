@@ -30,10 +30,10 @@ module.exports = function(Db,Cfg){
 							avatar:"",
 							state:"normal"
 						})
-						res.end("{code:'AA',_id:'"+_id+"'}")
+						res.end('{code:"AA",_id:"'+_id+'"}')
 					}
 					else{
-						res.end("{code:'AA',_id:'"+users[0]['_id']+"'}")
+						res.end('{code:"AA",_id:"'+users[0]['_id']+'"}')
 					}
 				}); 
 			})
