@@ -33,13 +33,14 @@ module.exports = function(Db,Cfg){
 			})
 
 
-		}
-	},
-	'/myapply/:uid':function(req,res,next,domain){
-		Db.apply.find({uid:req.params.uid},function(err,result){
-			domain.run(function(){
-				res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}')
+		},
+		'/myapply/:uid':function(req,res,next,domain){
+			Db.apply.find({uid:req.params.uid},function(err,result){
+				domain.run(function(){
+					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}')
+				})
 			})
-		})
+		}
 	}
+
 }

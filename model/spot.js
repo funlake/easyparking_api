@@ -4,13 +4,13 @@ module.exports = function(Db,Cfg){
 	Db.spot.ensureIndex({'uid':1});
 	return {
 		'post@/spot_add' : function(req,res,next,domain){
-			if(typeof req.params.latlng == "undefined" || (req.params.latlng.length == 0) || (req.params.latlng.indexOf(',') === -1)){
-				res.end("{code:'error',msg:'latlng parameter must be specified'}");
+			if(typeof req.params.latlng == "undefined" || (req.params.latlng.length == 0) || (req.params.latlng.indexOf(',') === -1) || (req.params.code.trim() == "") ){
+				res.end("{code:'error',msg:'必填信息不允许为空'}");
 			}
 			else{
 				var latlng = req.params.latlng.split(","),lat = parseFloat(latlng[0]),lng = parseFloat(latlng[1]);
 			}
-			Db.spot.find({uid:req.params.uid,loc:{longitude:lng,latitude:lat}},function(err,result){
+			Db.spot.find({uid:req.params.uid,loc:{longitude:lng,latitude:lat},code:req.params.code},function(err,result){
 				domain.run(function(){
 					if(result.length < 1){
 						Db.spot.insert({
@@ -22,6 +22,7 @@ module.exports = function(Db,Cfg){
 							},
 							desc:req.params.desc+" ",
 							available_times : req.params.times.split(";"),
+							code:req.params.code,
 							state:'normal'
 						},function(err,inserted){
 							if(!err && inserted){
@@ -33,7 +34,7 @@ module.exports = function(Db,Cfg){
 						});
 					}
 					else{
-						res.end('{"code":"error","msg":"此车位已存在,无需重复添加"}');
+						res.end('{"code":"error","msg":"此车位已存在"}');
 					}
 				})
 			});
@@ -85,6 +86,18 @@ module.exports = function(Db,Cfg){
 					})
 				}
 
+			});
+		},
+		'/spot_point_find/:lng/:lat':function(req,res,next,domain){
+			console.log(req.params.lng);
+			console.log(req.params.lat);
+			domain.run(function(){
+				Db.spot.find({'loc':{
+					'longitude' : parseFloat(req.params.lng),
+					'latitude'  : parseFloat(req.params.lat)
+				}}).sort({uid:1,code:1},function(err,result){
+					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
+				})
 			});
 		},
 		'/myspots/:uid' : function(req,res,next,domain){
