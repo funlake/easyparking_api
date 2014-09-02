@@ -1,4 +1,5 @@
 module.exports = function(Db,Cfg){
+	Db.apply.ensureIndex({uid:1,spot_id:1},{unique: true, dropDups: true})
 	return {
 		'/apply': function(req,res,next){
 			res.end("{code:'apply'}");
@@ -8,31 +9,24 @@ module.exports = function(Db,Cfg){
 			if((typeof req.params.spot_id == "undefined") || (typeof req.params.uid == "undefined")){
 				res.end('{"code":"error","msg":"Spot or user info required"}')
 			}
-			Db.apply.find({uid:req.params.uid,spot_id:req.params.spot_id,state:"normal"},function(err,result){
-				if(!err && (result.length == 0)){
-					var helper = require("../helper.js");
-					domain.run(function(){
-						Db.apply.save({
-							uid 	: req.params.uid,
-							spot_id : req.params.spot_id,
-							created_time : helper.getDateTime(),
-							state 	: "normal"
-			 			},function(err,status){
-			 				if(!err && status){
-								res.end('{"code":"success","msg":"申请添加成功"}');
-							}
-							else{
-								res.end('{"code":"error","msg":"申请添加失败"}');
-							}
-			 			})
-					})
-				}
-				else{
-					res.end('{"code":"error","msg":"您正在申请该车位,无需重复申请!"}');
-				}
-			})
-
-
+			res.end('{"code":"success","msg":"车位成功申请!"}');
+			var helper = require("../helper.js");
+			var spots = req.params.spot_id.split(",");
+			for(var i = 0,j=spots.length;i<j;i++){
+				//Db.apply.find({uid:req.params.uid,spot_id:spots[i],state:"normal"},(function(sp){
+						//return function(err,result){
+							//if(!err && (result.length == 0)){
+								Db.apply.save({
+									uid 	: req.params.uid,
+									spot_id : spot[i],
+									created_time : helper.getDateTime(),
+									state 	: "applying"
+					 			})
+							//}
+						//}
+					//})(spots[i])//ending of callback
+				//)//ending of Dp.apply.find
+			}//ending of for staterment
 		},
 		'/myapply/:uid':function(req,res,next,domain){
 			Db.apply.find({uid:req.params.uid},function(err,result){

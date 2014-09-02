@@ -82,15 +82,29 @@ module.exports = function(Db,Cfg){
 			},state:'normal'},function(err,result){
 				if(!err){
 					domain.run(function(){
-						res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
+						var booked = {}
+						Db.apply.find({uid:req.params.uid},function(err,applys){
+							//搜出所有当前用户正在申请的车位
+							applys.forEach(function(v){
+								booked[v['spot_id']] = v.state
+							})
+							//改变返回车位的申请状态为用户当前的申请状态
+							//可能值为:"可申请","申请中","待确认"
+							for(var i = 0,j=result.length;i<j;i++){
+								if(booked.hasOwnProperty(result[i]['_id'])){
+									result[i]['state'] = booked[result[i]['_id']];
+								}
+							}
+							res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
+						})
+
+						
 					})
 				}
 
 			});
 		},
 		'/spot_point_find/:lng/:lat':function(req,res,next,domain){
-			console.log(req.params.lng);
-			console.log(req.params.lat);
 			domain.run(function(){
 				Db.spot.find({'loc':{
 					'longitude' : parseFloat(req.params.lng),
