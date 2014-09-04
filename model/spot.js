@@ -25,6 +25,8 @@ module.exports = function(Db,Cfg){
 							created_time : helper.getDateTime(),
 							available_times : req.params.times.split(";"),
 							code:req.params.code,
+							applicants : [],
+							apply_count : 0,
 							state:'normal'
 						},function(err,inserted){
 							if(!err && inserted){
