@@ -83,7 +83,7 @@ module.exports = function(Db,Cfg){
 						//6371 符合高德地图切面,3959不符合
 						[parseFloat(req.params.lng),parseFloat(req.params.lat)] , parseFloat(req.params.radius)/6371 ] 
 				}
-			},state:'normal'},function(err,result){
+			},state:{$ne:'approved'}},function(err,result){
 				if(!err){
 					domain.run(function(){
 						res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
