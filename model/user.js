@@ -15,8 +15,58 @@ module.exports = function(Db,Cfg){
 				}
 			})
 		},
-		'/user2' : function(req,res,next){
-			res.end('ahaha2');
+		'post@/user_register' : function(req,res,next,domain){
+			var pwd = req.params.pass.trim();
+			if(req.params.user.trim() == ""){
+				res.end('{"code":"error","msg":"用户名不能为空"}')
+				return;				
+			}
+			if(pwd == "" || pwd.length < 6){
+				res.end('{"code":"error","msg":"密码不可为空且不能小于6位"}')
+				return;
+			}
+			Db.users.findOne({user:req.params.user},function(err,userinfo){
+				domain.run(function(){
+					if(!err && userinfo != null){
+						res.end('{"code":"error","msg":"用户已存在!"}')
+					}
+					else{
+						Db.users.save({
+							user : req.params.user,
+							pass : pwd,
+							mobileid : req.params.uid,
+							state : "normal"
+						},function(err2,store){
+							if(!err2){
+								res.end('{"code":"success","msg":"您已成功注册,请登录进入应用."}')
+							}
+						})
+					}
+				})
+			})
+		},
+		'post@/user_login' : function(req,res,next,domain){
+			var pwd = req.params.pass.trim();
+			if(req.params.user.trim() == ""){
+				res.end('{"code":"error","msg":"用户名不能为空"}')
+				return;				
+			}
+			if(pwd == "" || pwd.length < 6){
+				res.end('{"code":"error","msg":"密码不可为空且不能小于6位"}')
+				return;
+			}
+			Db.users.findOne({user:req.params.user,pass:pwd},function(err,userinfo){
+				domain.run(function(){
+					if(err || userinfo == null){
+						res.end('{"code":"error","msg":"用户名或密码错误!"}')
+						return;
+					}
+					else{
+						res.end('{"code":"success","msg":"您已成功登录!","result":'+JSON.stringify(userinfo)+'}');
+					}
+				})
+
+			})
 		},
 		'post@/user_add':function(req,res,next,domain){
 			Db.users.find({user:req.params.user},function(err,users){
