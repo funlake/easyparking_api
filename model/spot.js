@@ -116,6 +116,10 @@ module.exports = function(Db,Cfg){
 									if(booked.hasOwnProperty(result[i]['_id'])){
 										result[i]['state'] = booked[result[i]['_id']];
 									}
+									else{
+										//对于用户来说,是可申请状态,此api方法只针对单个用户本身
+										result[i]['state'] = "normal";
+									}
 								}
 								res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
 							})

@@ -34,8 +34,12 @@ module.exports = function(Db,Cfg){
 						Db.users.save({
 							user : req.params.user,
 							pass : pwd,
-							mobileid : req.params.uid,
-							state : "normal"
+							mobileid : req.params.did,
+							state : "normal",
+							//积分
+							points:0,
+							//是否登录过?预备第一次登录可加积分
+							neverlogin:true
 						},function(err2,store){
 							if(!err2){
 								res.end('{"code":"success","msg":"您已成功注册,请登录进入应用."}')
@@ -62,6 +66,8 @@ module.exports = function(Db,Cfg){
 						return;
 					}
 					else{
+						//第一次登录加5个积分.
+						Db.users.update({_id:Db.ObjectId(userinfo._id.toString()),neverlogin:true},{$set:{neverlogin:false},$inc:{points:5}});
 						res.end('{"code":"success","msg":"您已成功登录!","result":'+JSON.stringify(userinfo)+'}');
 					}
 				})
