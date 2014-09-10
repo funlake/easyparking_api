@@ -62,7 +62,9 @@ module.exports = function(Db,Cfg){
 								return function(err,status){
 									//update all related apply
 									if(!err){
-										Db.apply.update({spot_id:sid},{$set:{state:"spot_removed"}},{multi:true})
+										Db.apply.update({spot_id:sid.toString()},{$set:{state:'fail'}},{multi:true},function(err2,status){
+											
+										})
 									}
 								}
 							}

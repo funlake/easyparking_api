@@ -12,7 +12,14 @@ module.exports = function(Db,Cfg){
 			
 			var helper = require("../helper.js");
 			var spots = req.params.spot_id.split(",");
-
+			//handle time
+			var start_time = req.params.beginning,end_time = req.params.end,ed;
+			var st = helper.getDate()+" "+start_time;
+			if(parseInt(start_time.replace(/:/)) < parseInt(end_time.replace(/:/))){
+				//datetime of end bigger than beginning
+				//so end must be the day after beginning date
+				ed = helper.getDate(1)+" "+end_time;
+			}
 			spots.forEach(function(spot_id){
 				Db.users.find({_id:Db.ObjectId(req.params.uid)},function(err,user){
 					Db.spot.find({_id:Db.ObjectId(spot_id)},function(err2,spot){
@@ -30,6 +37,8 @@ module.exports = function(Db,Cfg){
 											uid 	: req.params.uid,
 											spot_id : spot_id,
 											created_time : helper.getDateTime(),
+											start_time 	 : st,
+											end_time 	 : ed,
 											state 	: "applying",
 											userinfo : user[0],
 											spotinfo  : spot[0]
