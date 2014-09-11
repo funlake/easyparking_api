@@ -59,7 +59,7 @@ module.exports = function(Db,Cfg){
 			});
 		},
 		'/myapply/:uid':function(req,res,next,domain){
-			Db.apply.find({uid:req.params.uid},function(err,result){
+			Db.apply.find({uid:req.params.uid}).sort({created_time:-1},function(err,result){
 				domain.run(function(){
 					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}')
 				})
@@ -86,14 +86,14 @@ module.exports = function(Db,Cfg){
 			},function(err,data,lastErrorObject){
 				domain.run(function(){
 					//把车位的状态设置为"已同意申请"状态
-					Db.spot.update({_id:Db.ObjectId(data.spotinfo._id.toString())},{$set:{state:'waitforconfirm'}},function(err2,updated){
-						if(!err2){
+					//Db.spot.update({_id:Db.ObjectId(data.spotinfo._id.toString())},{$set:{state:'waitforconfirm'}},function(err2,updated){
+					//	if(!err2){
 							//把相同停车位的其他申请设置为"被拒绝"
 							Db.apply.update({state:'applying',spot_id:data.spot_id},{$set:{state:'fail'}},{multi:true},function(err2,updated2){
 
 							})
-						}
-					})//Db.spot.update
+						//}
+					//})//Db.spot.update
 				})
 
 			})//Db.apply.findAndModify
@@ -104,7 +104,6 @@ module.exports = function(Db,Cfg){
 				res.end('{"code":"error","msg":"Spot or user info required"}')
 			}
 			res.end('{"code":"success","msg":"已拒绝所选申请"}')
-
 			Db.apply.findAndModify({
 				query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid},
 				update : {$set:{state:'fail'}},
