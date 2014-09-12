@@ -36,7 +36,9 @@ module.exports = function(){
 
 		    if(typeof addDay != "undefined"){
 		    	date.setDate(day+addDay)
+		    	day = date.getDate();
 		    }
+
 		    day = (day < 10 ? "0" : "") + day;
 
 		    return year + "-" + month + "-" + day;			

@@ -1,5 +1,6 @@
 module.exports = function(Db,Cfg){
 	//Db.apply.ensureIndex({uid:1,spot_id:1},{unique: true, dropDups: true})
+	Db.apply.ensureIndex({state:1});
 	return {
 		'/apply': function(req,res,next){
 			res.end("{code:'apply'}");
@@ -15,7 +16,7 @@ module.exports = function(Db,Cfg){
 			//handle time
 			var start_time = req.params.beginning,end_time = req.params.end,ed;
 			var st = helper.getDate()+" "+start_time;
-			if(parseInt(start_time.replace(/:/)) < parseInt(end_time.replace(/:/))){
+			if(parseInt(start_time.replace(/:/)) > parseInt(end_time.replace(/:/))){
 				//datetime of end bigger than beginning
 				//so end must be the day after beginning date
 				ed = helper.getDate(1)+" "+end_time;
@@ -46,7 +47,7 @@ module.exports = function(Db,Cfg){
 							 				if(!err4 && !!store){
 							 					//store.spotinfo = null;
 							 					//store.spot_id = null;
-							 					Db.spot.update({_id:Db.ObjectId(spot_id)},{$inc:{apply_count:1},$push:{applicants:store._id}},function(err4){});
+							 					Db.spot.update({_id:Db.ObjectId(spot_id)},{$set:{new_apply:true}},function(err4){});
 							 					res.end('{"code":"success","msg":"车位成功申请!"}');
 							 				}
 							 			})//Db.apply.save
@@ -69,8 +70,9 @@ module.exports = function(Db,Cfg){
 			if(typeof req.params.spot_id == "undefined"){
 				res.end('{"code":"error","msg":"Spot id needed to get apply data"}')
 			}
-			Db.apply.find({spot_id:req.params.spot_id},function(err,result){
+			Db.apply.find({spot_id:req.params.spot_id}).sort({created_time:-1},function(err,result){
 				res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}')
+				Db.spot.update({_id:Db.ObjectId(req.params.spot_id)},{$set:{new_apply:false}});
 			});
 		},
 		'post@/apply_confirm' : function(req,res,next,domain){
