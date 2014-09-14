@@ -21,6 +21,10 @@ module.exports = function(Db,Cfg){
 				//so end must be the day after beginning date
 				ed = helper.getDate(1)+" "+end_time;
 			}
+			else{
+				ed = helper.getDate()+ " " + end_time;
+			}
+
 			spots.forEach(function(spot_id){
 				Db.users.find({_id:Db.ObjectId(req.params.uid)},function(err,user){
 					Db.spot.find({_id:Db.ObjectId(spot_id)},function(err2,spot){
@@ -44,12 +48,19 @@ module.exports = function(Db,Cfg){
 											userinfo : user[0],
 											spotinfo  : spot[0]
 							 			},function(err4,store){
-							 				if(!err4 && !!store){
-							 					//store.spotinfo = null;
-							 					//store.spot_id = null;
-							 					Db.spot.update({_id:Db.ObjectId(spot_id)},{$set:{new_apply:true}},function(err4){});
-							 					res.end('{"code":"success","msg":"车位成功申请!"}');
-							 				}
+							 				domain.run(function(){
+								 				if(!err4 && !!store){
+								 					//store.spotinfo = null;
+								 					//store.spot_id = null;
+								 					Db.spot.update({_id:Db.ObjectId(spot_id)},{$set:{new_apply:true}},function(err4){});
+								 					res.end('{"code":"success","msg":"车位成功申请!"}');
+								 				}
+								 				else{
+								 					res.end('{"code":"error","msg":"车位申请失败!('+err4+')"}');
+								 				}
+
+							 				})
+
 							 			})//Db.apply.save
 									}
 								})
