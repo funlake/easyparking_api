@@ -58,7 +58,9 @@ module.exports = function(Db,Cfg){
 							points:0,
 							//是否登录过?预备第一次登录可加积分
 							neverlogin:true,
-							phone : ""
+							phone : ""，
+							//默认北京市
+							city : "39.90403,116.407525"
 						},function(err2,store){
 							if(!err2){
 								res.end('{"code":"success","msg":"您已成功注册,请登录进入应用."}')
