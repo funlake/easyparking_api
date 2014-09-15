@@ -5,13 +5,31 @@ module.exports = function(Db,Cfg){
 			res.end("{code:'AA'}");
 			console.log("nice response");
 		},
-		'/user' : function(req,res,next){
-			var users = Db.users.find({},function(err,users){
-				if(err){
-					throw new Error(err);
+		'/user_get/:uid' : function(req,res,next,domain){
+			Db.users.findOne({_id:Db.ObjectId(req.params.uid)},function(err,userinfo){
+				domain.run(function(){
+					if(!err){
+						res.end('{"code":"success","result":'+JSON.stringify(userinfo)+'}')
+					}
+					else{
+						res.end('{"code":"error","msg":"无法获取用户信息!"}');
+					}
+				})
+			});
+		},
+		'post@/user_update/:uid' : function(req,res,next,domain){
+			Db.users.update({
+				_id : Db.ObjectId(req.params.uid)
+			},{
+				$set : {
+					phone : req.params.phone
+				}
+			},function(err,status){
+				if(!err){
+					res.end('{"code":"success","msg":"用户信息更新成功!"}')
 				}
 				else{
-					res.end(JSON.stringify(users));
+					res.end('{"code":"error","msg":"更新错误!('+err+')"}')
 				}
 			})
 		},
@@ -39,7 +57,8 @@ module.exports = function(Db,Cfg){
 							//积分
 							points:0,
 							//是否登录过?预备第一次登录可加积分
-							neverlogin:true
+							neverlogin:true,
+							phone : ""
 						},function(err2,store){
 							if(!err2){
 								res.end('{"code":"success","msg":"您已成功注册,请登录进入应用."}')

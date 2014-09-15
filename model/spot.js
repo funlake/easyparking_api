@@ -12,34 +12,39 @@ module.exports = function(Db,Cfg){
 			}
 			var helper = require("../helper.js");
 			Db.spot.find({uid:req.params.uid,loc:{longitude:lng,latitude:lat},code:req.params.code},function(err,result){
-				domain.run(function(){
-					if(result.length < 1){
-						Db.spot.insert({
-							uid:req.params.uid,
-							address:req.params.address,
-							loc:{
-								longitude:lng,
-								latitude:lat
-							},
-							desc:req.params.desc+" ",
-							created_time : helper.getDateTime(),
-							available_times : req.params.times.split(";"),
-							code:req.params.code,
-							applicants : [],
-							apply_count : 0,
-							state:'normal'
-						},function(err,inserted){
-							if(!err && inserted){
-								res.end('{"code":"success","msg":"车位已成功添加"}');
-							}
-							else{
-								res.end('{"code":"error","msg":"车位无法添加"}');
-							}
-						});
-					}
-					else{
-						res.end('{"code":"error","msg":"此车位已存在"}');
-					}
+				Db.users.findOne({_id:Db.ObjectId(req.params.uid)},function(err2,data){
+					domain.run(function(){
+						if(result.length < 1){
+							Db.spot.insert({
+								uid:req.params.uid,
+								address:req.params.address,
+								loc:{
+									longitude:lng,
+									latitude:lat
+								},
+								desc:req.params.desc+" ",
+								created_time : helper.getDateTime(),
+								available_times : req.params.times.split(";"),
+								code:req.params.code,
+								applicants : [],
+								apply_count : 0,//是否有新申请
+								success_count:0,//成功次数
+								rateing : 0,//信誉
+								userinfo:data,
+								state:'normal'
+							},function(err,inserted){
+								if(!err && inserted){
+									res.end('{"code":"success","msg":"车位已成功添加"}');
+								}
+								else{
+									res.end('{"code":"error","msg":"车位无法添加"}');
+								}
+							});
+						}
+						else{
+							res.end('{"code":"error","msg":"此车位已存在"}');
+						}
+					})
 				})
 			});
 		},//spot_add method end

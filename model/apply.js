@@ -26,9 +26,9 @@ module.exports = function(Db,Cfg){
 			}
 
 			spots.forEach(function(spot_id){
-				Db.users.find({_id:Db.ObjectId(req.params.uid)},function(err,user){
-					Db.spot.find({_id:Db.ObjectId(spot_id)},function(err2,spot){
-						if((!err) && (!err2) && user.length && spot.length){
+				Db.users.findOne({_id:Db.ObjectId(req.params.uid)},function(err,user){
+					Db.spot.findOne({_id:Db.ObjectId(spot_id)},function(err2,spot){
+						if((!err) && (!err2) && (user!=null) && (spot!=null)){
 								Db.apply.findOne({
 									uid 	: req.params.uid,
 									spot_id : spot_id,
@@ -45,8 +45,8 @@ module.exports = function(Db,Cfg){
 											start_time 	 : st,
 											end_time 	 : ed,
 											state 	: "applying",
-											userinfo : user[0],
-											spotinfo  : spot[0]
+											userinfo : user,
+											spotinfo  : spot
 							 			},function(err4,store){
 							 				domain.run(function(){
 								 				if(!err4 && !!store){
