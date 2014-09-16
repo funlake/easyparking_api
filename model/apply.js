@@ -146,6 +146,27 @@ module.exports = function(Db,Cfg){
 				// 	})//Db.spot.update
 				// })
 			})//Db.apply.findAndModify
+		},
+		'post@/apply_approved': function(req,res,next,domain){
+			if((typeof req.params.aid == "undefined") || (typeof req.params.uid == "undefined") || (req.params.aid+req.params.uid == "")){
+				res.end('{"code":"error","msg":"Spot or user info required"}')
+			}
+			domain.run(function(){
+				Db.apply.findAndModify({
+					query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid},
+					update : {$set:{state:'approved'}},
+					new : false
+				},function(err,data,lastErrorObject){
+					if(!err && data!=null){
+						Db.spot.update({_id:Db.ObjectId(data.spot_id)},{$set:{state:'approved'}});
+						res.end('{"code":"success","msg":"停车开始!"}')
+					}
+					else{
+						res.end('{"code":"error","msg":"无法停车('+err+')"}')
+					}
+
+				})				
+			})
 		}
 	}
 
