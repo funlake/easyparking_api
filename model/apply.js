@@ -6,6 +6,18 @@ module.exports = function(Db,Cfg){
 			res.end("{code:'apply'}");
 			console.log("nice apply response");
 		},
+		'/apply_get/:id/:uid' : function(req,res,next,domain){
+			Db.apply.findOne({_id:Db.ObjectId(req.params.id),uid:req.params.uid},function(err,data){
+				domain.run(function(){
+					if(!err){
+						res.end('{"code":"success","result":'+JSON.stringify(data)+'}')
+					}
+					else{
+						res.end('{"code":"error","msg":"没有找到相应数据!"}')
+					}					
+				})
+			})
+		},
 		'post@/apply_add/:uid':function(req,res,next,domain){
 			if((typeof req.params.spot_id == "undefined") || (typeof req.params.uid == "undefined")){
 				res.end('{"code":"error","msg":"Spot or user info required"}')

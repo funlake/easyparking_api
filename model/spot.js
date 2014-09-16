@@ -31,7 +31,8 @@ module.exports = function(Db,Cfg){
 								success_count:0,//成功次数
 								rateing : 0,//信誉
 								userinfo:data,
-								state:'normal'
+								state:'normal',
+								parking_end_time:''
 							},function(err,inserted){
 								if(!err && inserted){
 									res.end('{"code":"success","msg":"车位已成功添加"}');

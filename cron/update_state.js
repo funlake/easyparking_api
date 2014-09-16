@@ -20,4 +20,9 @@ var curTime = function() {
 
     return year + "-" + month + "-" + day + " " + hour + ":" + min;
 }
+//update zombie applys
 db.apply.update({state:{$in:['normal','applying','waitforconfirm']},end_time:{$lte:curTime()}},{$set:{state:'expired'}},{multi:true});
+//update parking applys
+db.apply.update({state:{$in:['approved']},end_time:{$lte:curTime()}},{$set:{state:'success'}},{multi:true});
+//reopen spots
+db.spot.update({state:{$in:['approved']},parking_end_time:{$lte:curTime()}},{$set:{state:'normal'}},{multi:true});
