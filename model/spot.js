@@ -108,7 +108,7 @@ module.exports = function(Db,Cfg){
 				Db.spot.find({'loc':{
 					'longitude' : parseFloat(req.params.lng),
 					'latitude'  : parseFloat(req.params.lat)
-				}}).sort({uid:1,code:1},function(err,result){
+				},'state':{$ne:'approved'}}).sort({uid:1,code:1},function(err,result){
 					//res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
 					if(!err){
 						domain.run(function(){

@@ -53,14 +53,15 @@ module.exports = function(Db,Cfg){
 							user : req.params.user,
 							pass : pwd,
 							mobileid : req.params.did,
-							state : "normal",
 							//积分
 							points:0,
 							//是否登录过?预备第一次登录可加积分
 							neverlogin:true,
 							phone : "",
 							//默认北京市
-							city : "39.90403,116.407525"
+							city : "39.90403,116.407525",
+							parking_end_time : "",
+							state : "normal",
 						},function(err2,store){
 							if(!err2){
 								res.end('{"code":"success","msg":"您已成功注册,请登录进入应用."}')

@@ -38,6 +38,7 @@ module.exports = function(Db,Cfg){
 			}
 
 			spots.forEach(function(spot_id){
+
 				Db.users.findOne({_id:Db.ObjectId(req.params.uid)},function(err,user){
 					Db.spot.findOne({_id:Db.ObjectId(spot_id)},function(err2,spot){
 						if((!err) && (!err2) && (user!=null) && (spot!=null)){
@@ -58,7 +59,9 @@ module.exports = function(Db,Cfg){
 											end_time 	 : ed,
 											state 	: "applying",
 											userinfo : user,
-											spotinfo  : spot
+											spotinfo  : spot,
+											//申请人是否已经评论
+											user_comment : false
 							 			},function(err4,store){
 							 				domain.run(function(){
 								 				if(!err4 && !!store){
@@ -153,12 +156,17 @@ module.exports = function(Db,Cfg){
 			}
 			domain.run(function(){
 				Db.apply.findAndModify({
-					query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid},
+					query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid,state:'waitforconfirm'},
 					update : {$set:{state:'approved'}},
 					new : false
 				},function(err,data,lastErrorObject){
 					if(!err && data!=null){
-						Db.spot.update({_id:Db.ObjectId(data.spot_id)},{$set:{state:'approved'}});
+						//更新车位状态,标识停车截止时间,以方便定时任务更新车位状态
+						Db.spot.update({_id:Db.ObjectId(data.spot_id)},{$set:{state:'approved',parking_end_time:data.end_time}});
+						//更新申请人状态,标识停车截止时间,以方便定时任务更新申请人积分
+						Db.users.update({_id:Db.ObjectId(data.uid)},{$set:{state:'approved',parking_end_time:data.end_time}});
+						//更新车位主积分
+						Db.users.update({_id:Db.ObjectId(data.spotinfo.uid)},{$inc:{points:5}});
 						res.end('{"code":"success","msg":"停车开始!"}')
 					}
 					else{
@@ -167,6 +175,31 @@ module.exports = function(Db,Cfg){
 
 				})				
 			})
+		},
+		//leave the spot.mark apply as successfully one
+		'post@/apply_leave' : function(req,res,next,domain){
+			if((typeof req.params.aid == "undefined") || (typeof req.params.uid == "undefined") || (req.params.aid+req.params.uid == "")){
+				res.end('{"code":"error","msg":"Spot or user info required"}')
+			}
+			domain.run(function(){
+				Db.apply.findAndModify({
+					query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid,state:'approved'},
+					update : {$set:{state:'success'}},
+					new : false
+				},function(err,data,lastErrorObject){
+					if(!err && data!=null){
+						//重新开放车位
+						Db.spot.update({_id:Db.ObjectId(data.spot_id)},{$set:{state:'normal'},$inc:{success_count:1}});
+						//车位申请成功为申请人添加5个积分
+						Db.users.update({_id:Db.ObjectId(data.uid)},{$set:{state:'normal'},$inc:{points:5}});
+						res.end('{"code":"success","msg":"停车结束!"}')
+					}
+					else{
+						res.end('{"code":"error","msg":"操作失败('+err+')"}')
+					}
+
+				})				
+			})			
 		}
 	}
 
