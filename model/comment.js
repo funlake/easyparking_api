@@ -1,7 +1,6 @@
 module.exports=function(Db,Cfg){
 	return {
-		'post@comment_add' : function(req,res,next,domain){
-			console.log(req.params.aid);
+		'post@/comment_add' : function(req,res,next,domain){
 			Db.apply.findAndModify({
 				query : {
 					_id : Db.ObjectId(req.params.aid),
@@ -36,6 +35,16 @@ module.exports=function(Db,Cfg){
 					res.end('{"code":"error","msg":"'+err+'"}')
 				}
 			})//end of line 4
-		}//end of line 3
+		},
+		'/comment_find/:spot_id' : function(req,res,next,domain){
+			Db.comment.find({spot_id:req.params.spot_id},function(err,result){
+				if(!err){
+					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
+				}
+				else{
+					res.end('{"code":"error","msg":"'+res+'"}');
+				}
+			})
+		}
 	}//end of line 2
 }

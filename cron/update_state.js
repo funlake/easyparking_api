@@ -25,6 +25,6 @@ db.apply.update({state:{$in:['normal','applying','waitforconfirm']},end_time:{$l
 //update parking applys
 db.apply.update({state:{$in:['approved']},end_time:{$lte:curTime()}},{$set:{state:'success'}},{multi:true});
 //reopen spots
-db.spot.update({state:{$in:['approved']},parking_end_time:{$lte:curTime()}},{$set:{state:'normal'}},{multi:true});
+db.spot.update({state:{$in:['approved']},parking_end_time:{$lte:curTime()}},{$set:{state:'normal'},$inc:{success_count:1}},{multi:true});
 //add points to apply user and change status
 db.users.update({state:{$in:['approved']},parking_end_time:{$lte:curTime()}},{$set:{state:'normal'},$inc:{points:5}},{multi:true});

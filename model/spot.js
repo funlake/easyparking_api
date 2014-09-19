@@ -32,7 +32,8 @@ module.exports = function(Db,Cfg){
 								rateing : 0,//信誉
 								userinfo:data,
 								state:'normal',
-								parking_end_time:''
+								parking_end_time:'',
+								comment_count:0
 							},function(err,inserted){
 								if(!err && inserted){
 									res.end('{"code":"success","msg":"车位已成功添加"}');
@@ -146,10 +147,15 @@ module.exports = function(Db,Cfg){
 				})
 			});
 		},//myspots method end
-		'/spot_get/:id' : function(req,res,next,domain){
-			Db.spot.find({_id:Db.ObjectId(req.params.id)},function(err,result){
+		'/spot_get/:sid' : function(req,res,next,domain){
+			Db.spot.findOne({_id:Db.ObjectId(req.params.sid)},function(err,result){
 				domain.run(function(){
-					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}')
+					if(!err){
+						res.end('{"code":"success","result":'+JSON.stringify(result)+'}')
+					}
+					else{
+						res.end('{"code":"error","msg":"无法获取车位信息('+err+')"}')
+					}
 				});
 			});
 		}

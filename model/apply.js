@@ -106,23 +106,30 @@ module.exports = function(Db,Cfg){
 			if((typeof req.params.aid == "undefined") || (typeof req.params.uid == "undefined") || (req.params.aid+req.params.uid == "")){
 				res.end('{"code":"error","msg":"Spot or user info required"}')
 			}
-			res.end('{"code":"success","msg":"已确认所选申请"}')
+
+			var helper = require("../helper.js");
 			Db.apply.findAndModify({
-				query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid},
+				query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid,end_time:{$gte:helper.getDateTime()}},
 				update : {$set:{state:'waitforconfirm'}},
 				new : false
 			},function(err,data,lastErrorObject){
-				domain.run(function(){
-					//把车位的状态设置为"已同意申请"状态
-					//Db.spot.update({_id:Db.ObjectId(data.spotinfo._id.toString())},{$set:{state:'waitforconfirm'}},function(err2,updated){
-					//	if(!err2){
-							//把相同停车位的其他申请设置为"被拒绝"
-							Db.apply.update({state:'applying',spot_id:data.spot_id},{$set:{state:'fail'}},{multi:true},function(err2,updated2){
+				if(!err && data!=null){
+					res.end('{"code":"success","msg":"已确认所选申请"}')
+					domain.run(function(){
+						//把车位的状态设置为"已同意申请"状态
+						//Db.spot.update({_id:Db.ObjectId(data.spotinfo._id.toString())},{$set:{state:'waitforconfirm'}},function(err2,updated){
+						//	if(!err2){
+								//把相同停车位的其他申请设置为"被拒绝"
+								Db.apply.update({state:'applying',spot_id:data.spot_id},{$set:{state:'fail'}},{multi:true},function(err2,updated2){
 
-							})
-						//}
-					//})//Db.spot.update
-				})
+								})
+							//}
+						//})//Db.spot.update
+					})
+				}
+				else{
+					res.end('{"code":"error","msg":"申请已经过期!"}')
+				}
 
 			})//Db.apply.findAndModify
 		},
