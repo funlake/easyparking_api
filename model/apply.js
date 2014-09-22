@@ -162,8 +162,9 @@ module.exports = function(Db,Cfg){
 				res.end('{"code":"error","msg":"Spot or user info required"}')
 			}
 			domain.run(function(){
+				var helper = require("../helper.js");
 				Db.apply.findAndModify({
-					query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid,state:'waitforconfirm'},
+					query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid,state:'waitforconfirm',start_time:{$lte:helper.getDateTime()}},
 					update : {$set:{state:'approved'}},
 					new : false
 				},function(err,data,lastErrorObject){
@@ -177,7 +178,7 @@ module.exports = function(Db,Cfg){
 						res.end('{"code":"success","msg":"停车开始!"}')
 					}
 					else{
-						res.end('{"code":"error","msg":"无法停车('+err+')"}')
+						res.end('{"code":"error","msg":"无法停车,未到停车开始时间或数据异常!"}')
 					}
 
 				})				
@@ -189,9 +190,11 @@ module.exports = function(Db,Cfg){
 				res.end('{"code":"error","msg":"Spot or user info required"}')
 			}
 			domain.run(function(){
+				var helper = require("../helper.js");
 				Db.apply.findAndModify({
 					query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid,state:'approved'},
-					update : {$set:{state:'success'}},
+					//保存成实际停车时间
+					update : {$set:{state:'success',end_time:helper.getDateTime()}},
 					new : false
 				},function(err,data,lastErrorObject){
 					if(!err && data!=null){

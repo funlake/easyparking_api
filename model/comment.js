@@ -1,4 +1,5 @@
 module.exports=function(Db,Cfg){
+	Db.comment.ensureIndex({created_time:-1})
 	return {
 		'post@/comment_add' : function(req,res,next,domain){
 			Db.apply.findAndModify({
@@ -37,7 +38,7 @@ module.exports=function(Db,Cfg){
 			})//end of line 4
 		},
 		'/comment_find/:spot_id' : function(req,res,next,domain){
-			Db.comment.find({spot_id:req.params.spot_id},function(err,result){
+			Db.comment.find({spot_id:req.params.spot_id}).sort({created_time:-1},function(err,result){
 				if(!err){
 					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
 				}
