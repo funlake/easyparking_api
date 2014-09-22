@@ -18,11 +18,17 @@ module.exports = function(Db,Cfg){
 			});
 		},
 		'post@/user_update/:uid' : function(req,res,next,domain){
+			var latlng = req.params.latlng.split(","),lng = parseFloat(latlng[1]),lat = parseFloat(latlng[0])
 			Db.users.update({
 				_id : Db.ObjectId(req.params.uid)
 			},{
 				$set : {
-					phone : req.params.phone
+					phone : req.params.phone,
+					city : req.params.city,
+					loc : {
+						longitude : lng,
+						latitude : lat
+					}
 				}
 			},function(err,status){
 				if(!err){
@@ -49,6 +55,7 @@ module.exports = function(Db,Cfg){
 						res.end('{"code":"error","msg":"用户已存在!"}')
 					}
 					else{
+						var latlng = req.params.latlng.split(","),lng = parseFloat(latlng[1]),lat = parseFloat(latlng[0])
 						Db.users.save({
 							user : req.params.user,
 							pass : pwd,
@@ -59,7 +66,11 @@ module.exports = function(Db,Cfg){
 							neverlogin:true,
 							phone : "",
 							//默认北京市
-							city : "39.90403,116.407525",
+							city : req.params.city,
+							loc : {
+								longitude : lng,
+								latitude : lat
+							},
 							parking_end_time : "",
 							state : "normal",
 						},function(err2,store){
