@@ -39,6 +39,22 @@ module.exports = function(Db,Cfg){
 				}
 			})
 		},
+		'post@/user_update_clientid/:uid' : function(req,res,next,domain){
+			domain.run(function(){
+				Db.users.update({
+					_id : Db.ObjectId(req.params.uid)
+				},{
+					$set : {clientid:req.params.clientid}
+				},function(err,status){
+					if(!err){
+						res.end('{"code":"success","msg":"clientid更新成功!"}')
+					}
+					else{
+						res.end('{"code":"error","msg":"更新错误!('+err+')"}')
+					}				
+				})
+			})
+		},
 		'post@/user_register' : function(req,res,next,domain){
 			var pwd = req.params.pass.trim();
 			if(req.params.user.trim() == ""){
