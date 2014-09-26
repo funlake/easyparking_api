@@ -68,6 +68,7 @@ module.exports = function(Db,Cfg){
 								 					//store.spotinfo = null;
 								 					//store.spot_id = null;
 								 					Db.spot.update({_id:Db.ObjectId(spot_id)},{$set:{new_apply:true}},function(err4){});
+
 								 					res.end('{"code":"success","msg":"车位成功申请!"}');
 								 				}
 								 				else{
@@ -128,6 +129,7 @@ module.exports = function(Db,Cfg){
 					})
 				}
 				else{
+					Db.apply.update({_id:Db.ObjectId(req.params.aid),uid:req.params.uid},{$set:{state:'expired'}});
 					res.end('{"code":"error","msg":"申请已经过期!"}')
 				}
 

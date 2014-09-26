@@ -42,6 +42,11 @@ module.exports = function(){
 		    day = (day < 10 ? "0" : "") + day;
 
 		    return year + "-" + month + "-" + day;			
+		},
+		'sendPushMsg' : function(clientId){
+			require("child_process").exec("/usr/bin/php -v",function (error,stdout,stderr){
+				console.log(stdout);
+			});	
 		}
 	}
 }()
