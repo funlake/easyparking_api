@@ -11,7 +11,7 @@ module.exports = function(Db,Cfg){
 				var latlng = req.params.latlng.split(","),lat = parseFloat(latlng[0]),lng = parseFloat(latlng[1]);
 			}
 			var helper = require("../helper.js");
-			Db.spot.find({uid:req.params.uid,loc:{longitude:lng,latitude:lat},code:req.params.code},function(err,result){
+			Db.spot.find({uid:req.params.uid,loc:{longitude:lng,latitude:lat},code:req.params.code,state:{$ne:'removed'}},function(err,result){
 				Db.users.findOne({_id:Db.ObjectId(req.params.uid)},function(err2,data){
 					domain.run(function(){
 						if(result.length < 1){
@@ -62,14 +62,14 @@ module.exports = function(Db,Cfg){
 				//console.log(ids);
 				for(var i = 0,j=ids.length;i<j;i++){
 					tid = Db.ObjectId(ids[i]);
-					Db.spot.remove(
-						{_id:tid,uid:req.params.uid},
+					Db.spot.update(
+						{_id:tid,uid:req.params.uid},{$set:{state:'removed'}},
 						(
 							function(sid){
 								return function(err,status){
 									//update all related apply
 									if(!err){
-										Db.apply.update({spot_id:sid.toString()},{$set:{state:'fail'}},{multi:true},function(err2,status){
+										Db.apply.update({spot_id:sid.toString(),state:{$nin:['success','approved']}},{$set:{state:'fail'}},{multi:true},function(err2,status){
 											
 										})
 									}
@@ -92,7 +92,7 @@ module.exports = function(Db,Cfg){
 						//6371 符合高德地图切面,3959不符合
 						[parseFloat(req.params.lng),parseFloat(req.params.lat)] , parseFloat(req.params.radius)/6371 ] 
 				}
-			},state:{$ne:'approved'}},function(err,result){
+			},state:{$nin:['approved','removed']}},function(err,result){
 				if(!err){
 					domain.run(function(){
 						res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
@@ -109,7 +109,7 @@ module.exports = function(Db,Cfg){
 				Db.spot.find({'loc':{
 					'longitude' : parseFloat(req.params.lng),
 					'latitude'  : parseFloat(req.params.lat)
-				},'state':{$ne:'approved'}}).sort({uid:1,code:1},function(err,result){
+				},'state':{$nin:['approved','removed']}}).sort({uid:1,code:1},function(err,result){
 					//res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
 					if(!err){
 						domain.run(function(){
@@ -141,7 +141,7 @@ module.exports = function(Db,Cfg){
 			});
 		},
 		'/myspots/:uid' : function(req,res,next,domain){
-			Db.spot.find({uid:req.params.uid}).sort({created_time:-1},function(err,result){
+			Db.spot.find({uid:req.params.uid,state:{$ne:'removed'}}).sort({created_time:-1},function(err,result){
 				domain.run(function(){
 					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
 				})

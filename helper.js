@@ -43,8 +43,9 @@ module.exports = function(){
 
 		    return year + "-" + month + "-" + day;			
 		},
-		'sendPushMsg' : function(clientId){
-			require("child_process").exec("/usr/bin/php -v",function (error,stdout,stderr){
+		'sendPushMsg' : function(CmdPath,clientId,title,body,throughMsg){
+			var sendCmd = [CmdPath,clientId,title,body,throughMsg].join(" ");
+			require("child_process").exec("/usr/bin/php "+sendCmd,function (error,stdout,stderr){
 				console.log(stdout);
 			});	
 		}

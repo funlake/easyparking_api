@@ -6,6 +6,7 @@ module.exports=function(){
 		'Port'			: 9527,
 		'Point_rules'   : {
 			'firstlogin' : 5
-		}
+		},
+		'PushInterface' : '/Applications/MAMP/htdocs/getui_php/Send_message.php'
 	}
 }()

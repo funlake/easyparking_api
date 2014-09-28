@@ -19,22 +19,23 @@ module.exports = function(Db,Cfg){
 			})
 		},
 		'post@/apply_add/:uid':function(req,res,next,domain){
+
 			if((typeof req.params.spot_id == "undefined") || (typeof req.params.uid == "undefined")){
 				res.end('{"code":"error","msg":"Spot or user info required"}')
 			}
-			
 			var helper = require("../helper.js");
+
 			var spots = req.params.spot_id.split(",");
 			//handle time
 			var start_time = req.params.beginning,end_time = req.params.end,ed;
-			var st = helper.getDate()+" "+start_time;
+			var st = helper.getDate()+" "+start_time+":00";
 			if(parseInt(start_time.replace(/:/)) > parseInt(end_time.replace(/:/))){
 				//datetime of end bigger than beginning
 				//so end must be the day after beginning date
-				ed = helper.getDate(1)+" "+end_time;
+				ed = helper.getDate(1)+" "+end_time+":00";
 			}
 			else{
-				ed = helper.getDate()+ " " + end_time;
+				ed = helper.getDate()+ " " + end_time+":00";
 			}
 
 			spots.forEach(function(spot_id){
@@ -65,18 +66,21 @@ module.exports = function(Db,Cfg){
 							 			},function(err4,store){
 							 				domain.run(function(){
 								 				if(!err4 && !!store){
-								 					//store.spotinfo = null;
-								 					//store.spot_id = null;
 								 					Db.spot.update({_id:Db.ObjectId(spot_id)},{$set:{new_apply:true}},function(err4){});
-
+								 					//send push message to spot owner
+								 					helper.sendPushMsg(
+								 						Cfg.PushInterface,
+								 						spot.userinfo.clientid,
+									 					"新申请",
+									 					"用户["+user.user+"]申请了您的车位",
+									 					"spot"
+								 					);
 								 					res.end('{"code":"success","msg":"车位成功申请!"}');
 								 				}
 								 				else{
 								 					res.end('{"code":"error","msg":"车位申请失败!('+err4+')"}');
 								 				}
-
 							 				})
-
 							 			})//Db.apply.save
 									}
 								})
@@ -85,6 +89,28 @@ module.exports = function(Db,Cfg){
 					})//Db.spot.find
 				})//ending of Db.user.find
 			});
+		},
+		'post@/apply_remove/:uid' : function(req,res,next,domain){
+			if(req.params.ids == ""){
+				res.end('{"code":"error","msg":"未提供要删除的id"}');
+				return;
+			}
+			var ids = req.params.ids.split(",");
+			if(ids.length){
+				res.end('{"code":"success","msg":"您已成功删除申请"}'); //quick response,let process worked behind
+				var tid;
+				//console.log(ids);
+				for(var i = 0,j=ids.length;i<j;i++){
+					tid = Db.ObjectId(ids[i]);
+					Db.apply.remove(
+						{_id:tid,uid:req.params.uid}
+					);
+				}
+			}
+			else{
+				res.end('{"code":"error","msg":"未提供要删除的申请id"}');
+			}
+
 		},
 		'/myapply/:uid':function(req,res,next,domain){
 			Db.apply.find({uid:req.params.uid}).sort({created_time:-1},function(err,result){
@@ -120,6 +146,14 @@ module.exports = function(Db,Cfg){
 						//把车位的状态设置为"已同意申请"状态
 						//Db.spot.update({_id:Db.ObjectId(data.spotinfo._id.toString())},{$set:{state:'waitforconfirm'}},function(err2,updated){
 						//	if(!err2){
+								//send push message to applicant
+			 					helper.sendPushMsg(
+			 						Cfg.PushInterface,
+			 						data.userinfo.clientid,
+				 					"申请通过",
+				 					"您的申请已通过",
+				 					"apply"
+			 					);
 								//把相同停车位的其他申请设置为"被拒绝"
 								Db.apply.update({state:'applying',spot_id:data.spot_id},{$set:{state:'fail'}},{multi:true},function(err2,updated2){
 
@@ -177,6 +211,14 @@ module.exports = function(Db,Cfg){
 						Db.users.update({_id:Db.ObjectId(data.uid)},{$set:{state:'approved',parking_end_time:data.end_time}});
 						//更新车位主积分
 						Db.users.update({_id:Db.ObjectId(data.spotinfo.uid)},{$inc:{points:5}});
+						//send push message to spot owner
+						helper.sendPushMsg(
+	 						Cfg.PushInterface,
+	 						data.spotinfo.userinfo.clientid,
+		 					"用户停车",
+		 					"["+data.userinfo.user+"]已确定停靠在您的车位",
+		 					"spot"
+			 			);	
 						res.end('{"code":"success","msg":"停车开始!"}')
 					}
 					else{
@@ -204,6 +246,14 @@ module.exports = function(Db,Cfg){
 						Db.spot.update({_id:Db.ObjectId(data.spot_id)},{$set:{state:'normal'},$inc:{success_count:1}});
 						//车位申请成功为申请人添加5个积分
 						Db.users.update({_id:Db.ObjectId(data.uid)},{$set:{state:'normal'},$inc:{points:5}});
+						//send push message to spot owner
+						helper.sendPushMsg(
+	 						Cfg.PushInterface,
+	 						data.spotinfo.userinfo.clientid,
+		 					"用户离开",
+		 					"["+data.userinfo.user+"]已离开您的车位",
+		 					"spot"
+			 			);	
 						res.end('{"code":"success","msg":"停车结束!"}')
 					}
 					else{
