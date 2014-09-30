@@ -21,7 +21,7 @@ module.exports = function(Db,Cfg){
 		'post@/apply_add/:uid':function(req,res,next,domain){
 
 			if((typeof req.params.spot_id == "undefined") || (typeof req.params.uid == "undefined")){
-				res.end('{"code":"error","msg":"Spot or user info required"}')
+				res.end('{"code":"error","msg":"Not offered required params"}')
 			}
 			var helper = require("../helper.js");
 

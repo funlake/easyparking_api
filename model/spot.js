@@ -82,8 +82,6 @@ module.exports = function(Db,Cfg){
 			else{
 				res.end('{"code":"error","msg":"未提供要删除的id"}');
 			}
-
-
 		},
 		'/spot_radius_find/:lng/:lat/:radius/:uid' : function(req,res,next,domain){
 			Db.spot.find({'loc':{
@@ -95,7 +93,28 @@ module.exports = function(Db,Cfg){
 			},state:{$nin:['approved','removed']}},function(err,result){
 				if(!err){
 					domain.run(function(){
-						res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
+						Db.users.findOne({_id:Db.ObjectId(req.params.uid)},function(err2,user){
+							if(user != null){
+								//避免用户搜索到自己添加的车位
+								result = result.filter(function(s){
+									if(s.uid == user._id){
+										return false;
+									}
+									if(s.userinfo.mobileid == user.mobileid){
+										return false;
+									}
+									if(s.userinfo.clientid = user.clientid){
+										return false;
+									}
+									return true;
+								});
+								res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
+							}
+							else{
+								res.end('{"code":"error","msg":"不允许未验证用户查询车位!"}');
+							}
+						})
+						
 					})
 				}
 				else{
