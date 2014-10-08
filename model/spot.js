@@ -103,7 +103,7 @@ module.exports = function(Db,Cfg){
 									if(s.userinfo.mobileid == user.mobileid){
 										return false;
 									}
-									if(s.userinfo.clientid = user.clientid){
+									if(s.userinfo.clientid == user.clientid){
 										return false;
 									}
 									return true;
