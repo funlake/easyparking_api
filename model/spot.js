@@ -104,7 +104,7 @@ module.exports = function(Db,Cfg){
 										return false;
 									}
 									if(s.userinfo.clientid == user.clientid){
-										return false;
+										//return false;
 									}
 									return true;
 								});
