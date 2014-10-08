@@ -80,7 +80,7 @@ module.exports = function(Db,Cfg){
 							points:0,
 							//是否登录过?预备第一次登录可加积分
 							neverlogin:true,
-							phone : "",
+							phone : req.params.phone,
 							//默认北京市
 							city : req.params.city,
 							loc : {
@@ -88,7 +88,8 @@ module.exports = function(Db,Cfg){
 								latitude : lat
 							},
 							parking_end_time : "",
-							state : "normal",
+							state : "normal"
+
 						},function(err2,store){
 							if(!err2){
 								res.end('{"code":"success","msg":"您已成功注册,请登录进入应用."}')
