@@ -29,7 +29,7 @@ module.exports = function(Db,Cfg){
 								applicants : [],
 								apply_count : 0,//是否有新申请
 								success_count:0,//成功次数
-								rateing : 0,//信誉
+								rating : 0.0,//信誉
 								userinfo:data,
 								state:'normal',
 								parking_end_time:'',
@@ -50,6 +50,23 @@ module.exports = function(Db,Cfg){
 				})
 			});
 		},//spot_add method end
+		'post@/spot_update/:id' : function(req,res,next,domain){
+			if(req.params.id == ""){
+				res.end('{"code":"error","msg":"未提供id"}');
+				return;
+			}
+			Db.spot.update({
+				_id : Db.ObjectId(req.params.id)
+			},{
+				$set:{
+					desc : req.params.desc
+				}
+			},function(err,status){
+				if(!err){
+					res.end('{"code":"success","msg":"成功更新车位信息!"}')
+				}
+			})
+		},
 		'post@/spot_remove/:uid':function(req,res,next,domain){
 			if(req.params.ids == ""){
 				res.end('{"code":"error","msg":"未提供要删除的id"}');
