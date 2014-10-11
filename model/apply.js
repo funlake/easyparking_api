@@ -170,28 +170,30 @@ module.exports = function(Db,Cfg){
 			})//Db.apply.findAndModify
 		},
 		'post@/apply_reject' : function(req,res,next,domain){
-
 			if((typeof req.params.aid == "undefined") || (typeof req.params.uid == "undefined") || (req.params.aid+req.params.uid == "")){
 				res.end('{"code":"error","msg":"Spot or user info required"}')
 			}
 			res.end('{"code":"success","msg":"已拒绝所选申请"}')
-			Db.apply.findAndModify({
-				query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid},
-				update : {$set:{state:'fail'}},
-				new : false
-			},function(err,data,lastErrorObject){
-				// domain.run(function(){
-				// 	//把车位的状态设置为"已同意申请"状态
-				// 	Db.spot.update({_id:Db.ObjectId(data.spotinfo._id.toString())},{$set:{state:'waitforconfirm'}},function(err2,updated){
-				// 		if(!err2){
-				// 			//把相同停车位的其他申请设置为"被拒绝"
-				// 			Db.apply.update({state:'applying',spot_id:data.spot_id},{$set:{state:'fail'}},{multi:true},function(err2,updated2){
+			domain.run(function(){
+				Db.apply.findAndModify({
+					query : {_id:Db.ObjectId(req.params.aid),uid:req.params.uid},
+					update : {$set:{state:'fail'}},
+					new : false
+				},function(err,data,lastErrorObject){
+					// domain.run(function(){
+					// 	//把车位的状态设置为"已同意申请"状态
+					// 	Db.spot.update({_id:Db.ObjectId(data.spotinfo._id.toString())},{$set:{state:'waitforconfirm'}},function(err2,updated){
+					// 		if(!err2){
+					// 			//把相同停车位的其他申请设置为"被拒绝"
+					// 			Db.apply.update({state:'applying',spot_id:data.spot_id},{$set:{state:'fail'}},{multi:true},function(err2,updated2){
 
-				// 			})
-				// 		}
-				// 	})//Db.spot.update
-				// })
-			})//Db.apply.findAndModify
+					// 			})
+					// 		}
+					// 	})//Db.spot.update
+					// })
+				})//Db.apply.findAndModify
+			})
+
 		},
 		'post@/apply_approved': function(req,res,next,domain){
 			if((typeof req.params.aid == "undefined") || (typeof req.params.uid == "undefined") || (req.params.aid+req.params.uid == "")){
