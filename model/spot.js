@@ -115,10 +115,10 @@ module.exports = function(Db,Cfg){
 								//避免用户搜索到自己添加的车位
 								result = result.filter(function(s){
 									if(s.uid == user._id){
-										return false;
+										//return false;
 									}
 									if(s.userinfo.mobileid == user.mobileid){
-										return false;
+										//return false;
 									}
 									if(s.userinfo.clientid == user.clientid){
 										//return false;
@@ -150,24 +150,24 @@ module.exports = function(Db,Cfg){
 					if(!err){
 						domain.run(function(){
 							var booked = {}
-							Db.apply.find({uid:req.params.uid},function(err,applys){
-								//搜出所有当前用户正在申请的车位
-								applys.forEach(function(v){
-									booked[v['spot_id']] = v.state
-								})
-								//改变返回车位的申请状态为用户当前的申请状态
-								//可能值为:"可申请","申请中","待确认"
-								for(var i = 0,j=result.length;i<j;i++){
-									if(booked.hasOwnProperty(result[i]['_id'])){
-										result[i]['state'] = booked[result[i]['_id']];
-									}
-									else{
-										//对于用户来说,是可申请状态,此api方法只针对单个用户本身
-										result[i]['state'] = "normal";
-									}
-								}
+							// Db.apply.find({uid:req.params.uid},function(err,applys){
+							// 	//搜出所有当前用户正在申请的车位
+							// 	applys.forEach(function(v){
+							// 		booked[v['spot_id']] = v.state
+							// 	})
+							// 	//改变返回车位的申请状态为用户当前的申请状态
+							// 	//可能值为:"可申请","申请中","待确认"
+							// 	for(var i = 0,j=result.length;i<j;i++){
+							// 		if(booked.hasOwnProperty(result[i]['_id'])){
+							// 			result[i]['state'] = booked[result[i]['_id']];
+							// 		}
+							// 		else{
+							// 			//对于用户来说,是可申请状态,此api方法只针对单个用户本身
+							// 			result[i]['state'] = "normal";
+							// 		}
+							// 	}
 								res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
-							})
+							//})
 						})
 					}
 					else{

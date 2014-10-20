@@ -84,7 +84,6 @@ module.exports = function(Db,Cfg){
 							 			})//Db.apply.save
 									}
 								})
-
 						}//error detect
 					})//Db.spot.find
 				})//ending of Db.user.find
@@ -246,8 +245,8 @@ module.exports = function(Db,Cfg){
 					if(!err && data!=null){
 						//重新开放车位
 						Db.spot.update({_id:Db.ObjectId(data.spot_id)},{$set:{state:'normal'},$inc:{success_count:1}});
-						//车位申请成功为申请人添加5个积分
-						Db.users.update({_id:Db.ObjectId(data.uid)},{$set:{state:'normal'},$inc:{points:5}});
+						//车位申请成功为申请人添加2个积分
+						Db.users.update({_id:Db.ObjectId(data.uid)},{$set:{state:'normal'},$inc:{points:2}});
 						//send push message to spot owner
 						helper.sendPushMsg(
 	 						Cfg.PushInterface,
