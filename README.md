@@ -6,4 +6,5 @@
 > npm install restify,
 > npm install domain
 
-###3.启动,nodejs api.js
+###3.在config文件里配置端口,以及推送的程序路径
+###4.启动,nodejs api.js
