@@ -2,7 +2,7 @@
 
 ###2.安装所需packages
 
-> npm install mongojs
+> npm install mongojs,
 > npm install restify,
 > npm install domain
 
