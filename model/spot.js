@@ -100,6 +100,24 @@ module.exports = function(Db,Cfg){
 				res.end('{"code":"error","msg":"未提供要删除的id"}');
 			}
 		},
+		//search api for unregister poeple,did means device id,store as mobileid in database
+		'/spot_regular_find/:lng/:lat/:did' : function(req,res,next,domain){
+			Db.spot.find({'loc':{
+				$geoWithin:{
+					$centerSphere:[ 
+						//6371 符合高德地图切面,3959不符合,默认1公里
+						[parseFloat(req.params.lng),parseFloat(req.params.lat)] , 1/6371 ] 
+				}
+			},state:{$nin:['approved','removed']}/*,userinfo:{mobileid:{$ne:req.params.did}}*/},function(err,result){
+				if(!err){
+					res.end('{"code":"success","total":'+result.length+',"result":'+JSON.stringify(result)+'}');
+				}
+				else{
+					res.end('{"code":"error","msg":"'+err+'"}');
+				}
+			});
+		},
+		//search api for login people
 		'/spot_radius_find/:lng/:lat/:radius/:uid' : function(req,res,next,domain){
 			Db.spot.find({'loc':{
 				$geoWithin:{
