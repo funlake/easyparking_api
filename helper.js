@@ -49,7 +49,7 @@ module.exports = function(){
 				console.log(stdout);
 			});	
 		},
-		'sendVerifySms' : function(number){
+		'sendVerifySms' : function(number,code){
 			var Config		= require('./config.js');
 			var Http 		= require('http');
 			var Querystring 	= require('querystring');
@@ -57,10 +57,10 @@ module.exports = function(){
 			    uid:Config.Sms.Uid,
 			    pas:Config.Sms.Pass,
 			    mob:number,
-			    con:Config.Sms.Template.RegisterVerifyCode.replace(/\{verify_code\}/,Math.floor(Math.random()*89999 + 10000)),
+			    con:Config.Sms.Template.RegisterVerifyCode.replace(/\{verify_code\}/,code),
 			    type:'json'
 			};
-			console.log(postData);return;
+			console.log(postData);
 			var content = Querystring.stringify(postData);
 			var options = {
 			    host:'api.weimi.cc',

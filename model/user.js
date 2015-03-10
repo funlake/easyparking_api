@@ -1,4 +1,6 @@
 module.exports = function(Db,Cfg){
+	//Db.verifycode.ensureIndex({phone:1},{unique: true, dropDups: true})
+	Db.users.ensureIndex({phone:1})
 	var _id = 0;
 	return {
 		'/': function(req,res,next){
@@ -101,15 +103,15 @@ module.exports = function(Db,Cfg){
 		},
 		'post@/user_login' : function(req,res,next,domain){
 			var pwd = req.params.pass.trim();
-			if(req.params.user.trim() == ""){
-				res.end('{"code":"error","msg":"用户名不能为空"}')
+			if(req.params.phone.trim() == ""){
+				res.end('{"code":"error","msg":"手机号不能为空"}')
 				return;				
 			}
 			if(pwd == "" || pwd.length < 6){
 				res.end('{"code":"error","msg":"密码不可为空且不能小于6位"}')
 				return;
 			}
-			Db.users.findOne({user:req.params.user,pass:pwd},function(err,userinfo){
+			Db.users.findOne({phone:req.params.phone,pass:pwd},function(err,userinfo){
 				domain.run(function(){
 					if(err || userinfo == null){
 						res.end('{"code":"error","msg":"用户名或密码错误!"}')
@@ -166,6 +168,60 @@ module.exports = function(Db,Cfg){
 					})
 				})
 			}
+		},
+		'post@/user_if_exists' : function(req,res,next,domain){
+			Db.users.findOne({phone:req.params.phone},function(err,user){
+				domain.run(function(){
+					if(user != null){
+						res.end('{"code":"error","msg":"此手机号码已被注册!"}')
+					}
+					else{
+						res.end('{"code":"success","msg":"手机号码可用"}')
+					}
+				})
+			})
+		},
+		'post@/user_register_send_verify_code' : function(req,res,next,domain){
+			if(req.params.phone === undefined){
+				throw new Error("You must offer correct phone number");
+			}
+			var vc = Math.floor(Math.random()*89999 + 10000)
+			var helper = require("../helper.js");
+			domain.run(function(){
+				Db.verifycode.save({
+					_id			: req.params.phone,
+					phone 			: req.params.phone,
+					verify_code 		: vc,
+					expired_at		: Math.round(+new Date()/1000) + 3*60
+				},function(err,store){
+					if(!err){
+						helper.sendVerifySms(req.params.phone,vc);
+						res.end('{"code":"success","msg":"您已成功生成验证码"}')
+					}
+					else{
+						res.end('{"code":"error","msg":"无法生成验证码!"}')
+					}
+				});				
+			})
+		},
+		'post@/user_register_check_verify_code' : function(req,res,next,domain){
+			domain.run(function(){
+				Db.verifycode.findOne({phone:req.params.phone},function(err,data){
+					if(data != null){
+						var now = Math.round(+new Date()/1000) ;
+						if(data.verify_code != req.params.code){
+							res.end('{"code":"error","msg":"验证码不正确!"}')
+						}
+						else if(data.expired_at < now){
+							res.end('{"code":"error","msg":"验证码已过期!"}')
+						}
+						else{
+							res.end('{"code":"success","msg":"通过验证!"}')
+							Db.verifycode.remove({phone:req.params.phone});
+						}
+					}
+				})
+			})
 		}
 	}
 }
